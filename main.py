@@ -8,18 +8,25 @@ class Reader:
 
     def __init__(self) -> None:
         
-        with open("config.txt", "r") as cfg:
+        try:
+            with open("config.txt", "r") as cfg:
 
-            self.folder = cfg.readline().replace("folder: ", "").replace("\n", "")
+                self.window = Tk()
+                self.window.title("osu! music reader")
+
+                self.folder = cfg.readline().replace("folder: ", "").replace("\n", "")
     
-            if self.folder == "None":
-                self.not_defined_folder()
+                if self.folder == "None":
+                    self.not_defined_folder()
             
-    def osu_reader(self):
-        self.window = Tk()
-        self.popup.title("osu! music reader")
-        arr = listdir(self.osufolder.get())
+                self.osu_reader()
+        except FileNotFoundError:
+            with open("config.txt", "x") as cfg:
+                cfg.write("folder: None")
 
+    def osu_reader(self):
+        arr = listdir(self.osufolder.get())
+        print(arr)
                 
     def not_defined_folder(self):
         self.popup = Tk()
@@ -38,5 +45,6 @@ class Reader:
     def askdirectory(self):
         self.osufolder.set(filedialog.askdirectory())
         self.popup.update()
+
 
 a = Reader()
