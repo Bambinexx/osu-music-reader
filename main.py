@@ -4,6 +4,7 @@ from tkinter import ttk
 from time import sleep
 from os import listdir
 from itertools import *
+from pygame import mixer
 
 class Reader:
 
@@ -22,18 +23,35 @@ class Reader:
             
             self.open_cfg()
 
+
+    def open_cfg(self):
+        with open("config.txt", "r") as cfg:
+            self.osufolder = StringVar()
+            self.osufolder.set(cfg.readline().replace("folder: ", "").replace("\n", ""))
+
+            if self.osufolder.get() == "None":
+                self.not_defined_folder()
+        
+            self.osu_reader()
+
+
     def osu_reader(self):
-        arr = listdir(self.osufolder.get())
+        arr = listdir(self.osufolder.get() + "/Songs/")
         mainframe = ttk.Frame(self.reader, padding="2 2")
         mainframe.grid(column=0, row=0, sticky=(N,W,E,S))
 
         music_selection_menu = ttk.Frame(mainframe, padding=f"1 {len(arr)}").grid(column=2, row=2)
         
         for i,j in enumerate(arr):
-            ttk.Label(music_selection_menu, text=j).grid(column=1, row=i, sticky=(W))
+            
+            music = j.split("-")
+            print(music)
+
+            """ttk.Label(music_selection_menu, text=artist + name).grid(column=1, row=i, sticky=(W))"""
         
         self.reader.mainloop()
-                
+
+
     def not_defined_folder(self):
         self.popup = Toplevel()
         self.popup.title("Folder location")
@@ -45,20 +63,10 @@ class Reader:
         ttk.Label(mainframe, textvariable=self.osufolder).grid(column=1, row=3, sticky=(W, E))
         ttk.Button(mainframe, text="OK", command=self.popup.quit).grid(column=1, row=4)
         self.popup.mainloop()
-    
+
+
     def askdirectory(self):
         self.osufolder.set(filedialog.askdirectory())
         self.popup.update()
-    
-    def open_cfg(self):
-        with open("config.txt", "r") as cfg:
-            self.osufolder = StringVar()
-            self.osufolder.set(cfg.readline().replace("folder: ", "").replace("\n", ""))
-
-            if self.osufolder.get() == "None":
-                self.not_defined_folder()
-        
-            self.osu_reader()
-
 
 a = Reader()
