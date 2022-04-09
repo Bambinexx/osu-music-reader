@@ -83,20 +83,23 @@ class Reader:
             self.arr[i] = self.osufolder.get() + "/Songs/" + j
 
             ttk.Button(self.music_selection_menu, text=self.arr[i], command= lambda: self.play_music(self.arr[i])).grid(column=0, row=i+1, sticky=(W))
-        
-        print(self.arr)
-    
+
 
     def play_music(self, path):
 
-        print(path)
-        for file in path:
+        folder = listdir(path)
+
+        for file in folder:
 
             if ".mp3" in file:
-                audio = file
+                audio = path + "/" + file
+                break
 
-        p = MediaPlayer(file)
+        p = MediaPlayer(audio)
         p.play()
+
+        while True:
+            pass
 
         p.stop()
 
