@@ -4,15 +4,16 @@ from tkinter import ttk
 from time import sleep
 from os import listdir
 from itertools import *
-from vlc import *
+from pygame import mixer
 
 class Reader:
 
     def __init__(self) -> None:
 
+        mixer.init()
         self.reader = Tk()
+        self.previous_music = None
         self.reader.title("osu! music reader")
-
         self.width = self.reader.winfo_screenwidth()
         self.height = self.reader.winfo_screenheight()
         self.reader.geometry(f"{self.width}x{self.height}")
@@ -28,6 +29,7 @@ class Reader:
 
 
     def open_cfg(self):
+
         with open("config.txt", "r") as cfg:
 
             self.osufolder = StringVar()
@@ -45,6 +47,9 @@ class Reader:
             popup_gen.grid(column=1, row=1)
             button = ttk.Button(self.mainframe, text="clicc", command= lambda: self.not_defined_folder(popup_gen, button))
             button.grid(column=1, row=2)
+
+        else:
+            self.update_list()
             
         self.reader.mainloop()
 
@@ -53,7 +58,7 @@ class Reader:
 
         self.popup = Toplevel()
         self.popup.title("Folder location")
-        mainframe = ttk.Frame(self.popup, padding="1 4 12 12")
+        mainframe = ttk.Frame(self.popup, padding="1 4")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 
         ttk.Label(mainframe, text="Choose your osu! folder location").grid(column=1, row=1)
@@ -70,37 +75,39 @@ class Reader:
 
     def update_list(self, *args):
         
-        for i in args[0]:
-            i.destroy()
+        if len(args) != 0:
+            for i in args[0]:
+                i.destroy()
 
         self.arr = listdir(self.osufolder.get() + "/Songs/")
-        self.music_selection_menu = ttk.Frame(self.mainframe, padding=f"1 {len(self.arr)}").grid(column=2, row=2)
-        scrollbar = ttk.Scrollbar(self.music_selection_menu, orient="vertical")
-        scrollbar.grid(column=1)
+        self.music_selection_menu = ttk.Frame(self.mainframe, padding=f"1 1 12 12").grid(column=2, row=2)
 
-        for i,j in enumerate(self.arr):
-
-            self.arr[i] = self.osufolder.get() + "/Songs/" + j
-
-            ttk.Button(self.music_selection_menu, text=self.arr[i], command= lambda: self.play_music(self.arr[i])).grid(column=0, row=i+1, sticky=(W))
+        musics_var = StringVar(value=self.arr)
+        self.musics_list = Listbox(self.music_selection_menu, listvariable=musics_var, height=20, selectmode="browse")
+        self.musics_list.grid(column=0, row=0, sticky=(N,W,E,S)) 
+        self.musics_list.bind('<<ListboxSelect>>', self.play_music)
 
 
-    def play_music(self, path):
+    def play_music(self, event):
 
-        folder = listdir(path)
+        if self.previous_music != None:
+            self.previous_music.stop()
+            self.is_song_playing = False
+
+        music_index = self.arr[self.musics_list.curselection()[0]]
+        music_path = self.osufolder.get() + "/Songs/" + music_index
+
+        folder = listdir(music_path)
 
         for file in folder:
 
             if ".mp3" in file:
-                audio = path + "/" + file
+                audio = music_path + "/" + file
                 break
 
-        p = MediaPlayer(audio)
-        p.play()
-
-        while True:
-            pass
-
-        p.stop()
+        self.player = mixer.Sound(file=audio)
+        self.player.play()
+        self.previous_music = self.player
+        self.is_song_playing = True;
 
 a = Reader()
